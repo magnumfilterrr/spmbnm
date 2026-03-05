@@ -15,7 +15,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'   # pin versi Flutter agar stabil
+          flutter-version: '3.27.4'   # pin versi Flutter agar stabil
           channel: stable
           cache: true
 
