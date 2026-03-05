@@ -51,6 +51,9 @@ dependencies:
   uuid: ^4.4.0                       # generate ID unik
   shared_preferences: ^2.2.3
   sqflite_common_ffi_web: ^0.4.5+4
+  
+dependency_overrides:
+  google_fonts: 6.2.1
 
 dev_dependencies:
   flutter_test:
