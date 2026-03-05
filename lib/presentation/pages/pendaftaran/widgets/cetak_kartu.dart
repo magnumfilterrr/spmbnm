@@ -16,7 +16,7 @@ class CetakKartu {
 
     const pageFormat = PdfPageFormat(
       20 * PdfPageFormat.cm,
-      12 * PdfPageFormat.cm,
+      13 * PdfPageFormat.cm,
     );
 
     pdf.addPage(
@@ -47,9 +47,9 @@ class CetakKartu {
   static pw.Widget _buildJadwal() {
     final jadwalData = [
       [
-        'Pendaftaran PPDB',
-        '3 Februari -\n25 April 2025',
-        '28 April -\n2 Juli 2025'
+        'Pendaftaran SPMB',
+        '1 Maret -\n24 April 2026',
+        '28 April -\n2 Juli 2026'
       ],
       [
         'Rapat Orang Tua\nPeserta Didik Baru',
@@ -72,8 +72,11 @@ class CetakKartu {
         'Sabtu,\n5 Juli 2025'
       ],
       ['Pembekalan MPLS', 'Sabtu,\n12 Juli 2025', ''],
-      ['Pelaksanaan MPLS &\nOrientasi', '14 - 18 Juli 2025', ''],
-      ['Ekstrakurikuler', '', ''],
+      [
+        'Pelaksanaan MPLS &\nOrientasi Ekstrakurikuler',
+        '14 - 18 Juli 2025',
+        ''
+      ],
       [
         'Belajar Efektif Tahun\nPelajaran 2024/2025',
         'Senin,\n21 Juli 2025',
@@ -81,86 +84,90 @@ class CetakKartu {
       ],
     ];
 
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        // Header
-        pw.Center(
-          child: pw.Column(
-            children: [
-              pw.Text('JADWAL KEGIATAN PPDB',
-                  style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold, fontSize: 10)),
-              pw.Text('SMK NUURUL MUTTAQIIN CISURUPAN',
-                  style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold, fontSize: 9)),
-              pw.Text('TAHUN PELAJARAN 2025-2026',
-                  style: const pw.TextStyle(fontSize: 8)),
-            ],
-          ),
-        ),
-        pw.SizedBox(height: 6),
-
-        // Tabel
-        pw.Table(
-          border: pw.TableBorder.all(width: 0.5),
-          columnWidths: {
-            0: const pw.FlexColumnWidth(3),
-            1: const pw.FlexColumnWidth(2),
-            2: const pw.FlexColumnWidth(2),
-          },
+    return pw.Container(
+        decoration: pw.BoxDecoration(border: pw.Border.all(width: 1)),
+        padding: const pw.EdgeInsets.all(10),
+        // ✅ Isi penuh tinggi container
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            // Header tabel
-            pw.TableRow(
-              decoration: const pw.BoxDecoration(color: PdfColors.grey300),
-              children: [
-                _tableCell('URAIAN KEGIATAN', isHeader: true),
-                _tableCell('GELOMBANG 1\nHARI/TANGGAL', isHeader: true),
-                _tableCell('GELOMBANG 2\nHARI/TANGGAL', isHeader: true),
-              ],
+            // Header
+            pw.Center(
+              child: pw.Column(
+                children: [
+                  pw.Text('JADWAL KEGIATAN PPDB',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                  pw.Text('SMK NUURUL MUTTAQIIN CISURUPAN',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 9)),
+                  pw.Text('TAHUN PELAJARAN 2025-2026',
+                      style: const pw.TextStyle(fontSize: 8)),
+                ],
+              ),
             ),
-            ...jadwalData.map((row) => pw.TableRow(
-                  children: row.map((cell) => _tableCell(cell)).toList(),
-                )),
-          ],
-        ),
+            pw.SizedBox(height: 6),
 
-        pw.SizedBox(height: 4),
-        pw.Text(
-          'Catatan: Jadwal sewaktu-waktu bisa berubah disesuaikan dengan kondisi',
-          style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey700),
-        ),
-
-        pw.SizedBox(height: 6),
-
-        // TTD Kepala Sekolah
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.end,
-          children: [
-            pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
+            // Tabel
+            pw.Table(
+              border: pw.TableBorder.all(width: 0.5),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(3),
+                1: const pw.FlexColumnWidth(2),
+                2: const pw.FlexColumnWidth(2),
+              },
               children: [
-                pw.Text('MENGETAHUI KEPALA:',
-                    style: const pw.TextStyle(fontSize: 7)),
-                pw.Text('SMK NUURUL MUTTAQIIN CISURUPAN',
-                    style: const pw.TextStyle(fontSize: 7)),
-                pw.SizedBox(height: 24),
-                pw.Container(
-                  width: 110,
-                  decoration: const pw.BoxDecoration(
-                    border: pw.Border(bottom: pw.BorderSide(width: 0.5)),
-                  ),
+                // Header tabel
+                pw.TableRow(
+                  decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+                  children: [
+                    _tableCell('URAIAN KEGIATAN', isHeader: true),
+                    _tableCell('GELOMBANG 1\nHARI/TANGGAL', isHeader: true),
+                    _tableCell('GELOMBANG 2\nHARI/TANGGAL', isHeader: true),
+                  ],
                 ),
-                pw.SizedBox(height: 2),
-                pw.Text('H. ERUS ISKANDAR, S.Ag, MM.',
-                    style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                ...jadwalData.map((row) => pw.TableRow(
+                      children: row.map((cell) => _tableCell(cell)).toList(),
+                    )),
+              ],
+            ),
+
+            pw.SizedBox(height: 4),
+            pw.Text(
+              'Catatan: Jadwal sewaktu-waktu bisa berubah disesuaikan dengan kondisi',
+              style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey700),
+            ),
+
+            pw.SizedBox(height: 6),
+
+            // TTD Kepala Sekolah
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text('MENGETAHUI KEPALA:',
+                        style: const pw.TextStyle(fontSize: 7)),
+                    pw.Text('SMK NUURUL MUTTAQIIN CISURUPAN',
+                        style: const pw.TextStyle(fontSize: 7)),
+                    pw.SizedBox(height: 24),
+                    pw.Container(
+                      width: 110,
+                      decoration: const pw.BoxDecoration(
+                        border: pw.Border(bottom: pw.BorderSide(width: 0.5)),
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text('DASEP GUNAWAN, S.Pd.',
+                        style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold, fontSize: 7)),
+                  ],
+                ),
               ],
             ),
           ],
-        ),
-      ],
-    );
+        ));
   }
 
   // ─── KARTU PESERTA ───────────────────────────────────
@@ -192,7 +199,7 @@ class CetakKartu {
                 pw.Text('KARTU PESERTA PEMINATAN JURUSAN',
                     style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold, fontSize: 9)),
-                pw.Text('PENERIMAAN PESERTA DIDIK BARU (PPDB) 2025-2026',
+                pw.Text('SISTEM PENERIMAAN MURID BARU 2026-2027',
                     style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold, fontSize: 8)),
               ],
@@ -317,7 +324,7 @@ class CetakKartu {
                     ),
                   ),
                   pw.SizedBox(height: 2),
-                  pw.Text('LUKMAN NULHAKIM, S.Pd.',
+                  pw.Text('DADANG SAEPUDIN, SE.',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 7)),
                 ],

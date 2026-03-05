@@ -32,6 +32,8 @@ class _PendaftaranPageState extends State<PendaftaranPage>
   late TabController _tabController;
   bool get isEdit => widget.peserta != null;
   bool _isSubmitting = false;
+  PesertaModel? _savedPeserta;
+  PesertaModel? _lastSubmittedPeserta;
 
   // ─── CONTROLLERS ─────────────────────────────────────
   // Header
@@ -405,6 +407,8 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       updatedAt: now,
     );
 
+    _lastSubmittedPeserta = peserta;
+
     if (isEdit) {
       context.read<PendaftaranBloc>().add(UpdatePendaftaran(
             peserta: peserta,
@@ -425,7 +429,11 @@ class _PendaftaranPageState extends State<PendaftaranPage>
     return BlocListener<PendaftaranBloc, PendaftaranState>(
       listener: (context, state) {
         if (state is PendaftaranSuccess) {
-          setState(() => _isSubmitting = false);
+          setState(() {
+            _isSubmitting = false;
+            // ✅ simpan peserta yang baru disimpan
+            if (!isEdit) _savedPeserta = _lastSubmittedPeserta;
+          });
           context.read<DashboardBloc>().add(LoadDashboard());
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -727,6 +735,9 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         _buildTextField(_pekerjaanWaliCtrl, 'Pekerjaan'),
         _buildDropdown('Pendidikan', AppStrings.pendidikan, _pendidikanWali,
             (v) => setState(() => _pendidikanWali = v)),
+      ]),
+// ✅ Pisah penghasilan ke row sendiri agar tidak overflow
+      _buildRow([
         _buildDropdown('Penghasilan', AppStrings.penghasilan, _penghasilanWali,
             (v) => setState(() => _penghasilanWali = v)),
       ]),
@@ -758,6 +769,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
 
   // ─── TAB 6: PRESTASI & BEASISWA ──────────────────────
   Widget _buildTabPrestasi() {
+    final pesertaUntukCetak = isEdit ? widget.peserta : _savedPeserta;
     return _TabWrapper(children: [
       // Prestasi
       Row(
@@ -806,7 +818,10 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       const SizedBox(height: 8),
 
       // ✅ Cetak Kartu
-      if (isEdit) ...[
+
+      if (pesertaUntukCetak != null) ...[
+        const Divider(),
+        const SizedBox(height: 8),
         Row(
           children: [
             const Icon(Icons.print, color: AppTheme.primary),
@@ -820,7 +835,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
             ),
             const Spacer(),
             ElevatedButton.icon(
-              onPressed: () => CetakKartu.cetak(context, widget.peserta!),
+              onPressed: () => CetakKartu.cetak(context, pesertaUntukCetak),
               icon: const Icon(Icons.print),
               label: const Text('Cetak Kartu'),
               style: ElevatedButton.styleFrom(
@@ -831,6 +846,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
           ],
         ),
       ] else ...[
+        const Divider(),
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
