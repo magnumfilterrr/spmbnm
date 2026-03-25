@@ -125,6 +125,55 @@ class _PendaftaranPageState extends State<PendaftaranPage>
   String? _penghasilanWali;
 
   DateTime? _tglLahir;
+  // ✅ Validasi per tab sebelum lanjut
+  String? _validateTab(int index) {
+    switch (index) {
+      case 0:
+        if (_programCtrl.text.trim().isEmpty) return 'Program wajib diisi';
+        if (_caraDaftar == null) return 'Cara Daftar wajib dipilih';
+        if (_jalurPendaftaran == null) return 'Jalur Pendaftaran wajib dipilih';
+        if (_jurusan1 == null) return 'Jurusan Pilihan 1 wajib dipilih';
+        if (_caraDaftar == 'Kolektif' &&
+            _namaKolektifCtrl.text.trim().isEmpty) {
+          return 'Nama Kolektif wajib diisi';
+        }
+        return null;
+
+      case 1:
+        if (_namaCtrl.text.trim().isEmpty) return 'Nama Lengkap wajib diisi';
+        if (_jenisKelamin == null) return 'Jenis Kelamin wajib dipilih';
+        if (_nisnCtrl.text.trim().isEmpty) return 'NISN wajib diisi';
+        if (_nikCtrl.text.trim().isEmpty) return 'NIK wajib diisi';
+        if (_tempatLahirCtrl.text.trim().isEmpty)
+          return 'Tempat Lahir wajib diisi';
+        if (_tglLahir == null) return 'Tanggal Lahir wajib diisi';
+        if (_agamaCtrl.text.trim().isEmpty) return 'Agama wajib diisi';
+        return null;
+
+      case 2:
+        if (_alamatCtrl.text.trim().isEmpty) return 'Alamat wajib diisi';
+        if (_dusunCtrl.text.trim().isEmpty) return 'Dusun wajib diisi';
+        if (_kelurahanCtrl.text.trim().isEmpty)
+          return 'Kelurahan/Desa wajib diisi';
+        if (_kecamatanCtrl.text.trim().isEmpty) return 'Kecamatan wajib diisi';
+        if (_kabupatenCtrl.text.trim().isEmpty) return 'Kabupaten wajib diisi';
+        if (_propinsiCtrl.text.trim().isEmpty) return 'Provinsi wajib diisi';
+        if (_noTelpCtrl.text.trim().isEmpty && _noHpCtrl.text.trim().isEmpty) {
+          return 'No. Telepon atau No. HP wajib diisi';
+        }
+        if (_penerimaKps == null)
+          return 'Status Penerima KPS/PKH wajib dipilih';
+        return null;
+
+      case 3:
+        if (_namaAyahCtrl.text.trim().isEmpty) return 'Nama Ayah wajib diisi';
+        if (_namaIbuCtrl.text.trim().isEmpty) return 'Nama Ibu wajib diisi';
+        return null;
+
+      default:
+        return null;
+    }
+  }
 
   // Relasi
   List<PrestasiModel> _prestasiList = [];
@@ -142,7 +191,17 @@ class _PendaftaranPageState extends State<PendaftaranPage>
     if (isEdit) {
       _populateData();
       _loadRelasiData();
+    } else {
+      _generateNoReg(); // ✅ auto generate untuk form baru
     }
+  }
+
+  Future<void> _generateNoReg() async {
+    final repo = context.read<PesertaRepository>();
+    final noReg = await repo.generateNoReg();
+    setState(() {
+      _noRegCtrl.text = noReg;
+    });
   }
 
   Future<void> _loadRelasiData() async {
@@ -292,26 +351,57 @@ class _PendaftaranPageState extends State<PendaftaranPage>
   }
 
   void _submit() {
-    if (_isSubmitting) return; // guard
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mohon lengkapi data yang wajib diisi'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
-      return;
+    if (_isSubmitting) return;
+
+    // ✅ Validasi semua tab wajib sebelum simpan
+    final validasiTab = {
+      'Data Umum': _validateTab(0),
+      'Identitas': _validateTab(1),
+      'Alamat & Kontak': _validateTab(2),
+      'Data Orang Tua': _validateTab(3),
+    };
+
+    // Cek apakah ada error
+    for (final entry in validasiTab.entries) {
+      if (entry.value != null) {
+        // ✅ Langsung pindah ke tab yang error
+        final tabIndex = validasiTab.keys.toList().indexOf(entry.key);
+        _tabController.animateTo(tabIndex);
+        setState(() {});
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded,
+                    color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${entry.key}: ${entry.value}',
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        return; // ✅ stop submit
+      }
     }
-    setState(() => _isSubmitting = true); // lock
+
+    // ✅ Semua validasi lolos, lanjut simpan
+    setState(() => _isSubmitting = true);
 
     final now = DateTime.now().toIso8601String();
     final id = isEdit ? widget.peserta!.id : const Uuid().v4();
 
-    // ✅ Pastikan pesertaId selalu terisi
     final prestasiWithId = _prestasiList
         .map((p) => PrestasiModel(
               id: p.id,
-              pesertaId: id, // ✅ pakai id peserta yang benar
+              pesertaId: id,
               jenis: p.jenis,
               tingkat: p.tingkat,
               namaPrestasi: p.namaPrestasi,
@@ -323,7 +413,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
     final beasiswaWithId = _beasiswaList
         .map((b) => BeasiswaModel(
               id: b.id,
-              pesertaId: id, // ✅ pakai id peserta yang benar
+              pesertaId: id,
               jenis: b.jenis,
               penyelenggara: b.penyelenggara,
               tahunMulai: b.tahunMulai,
@@ -550,9 +640,26 @@ class _PendaftaranPageState extends State<PendaftaranPage>
     return _TabWrapper(children: [
       _SectionTitle('Informasi Pendaftaran'),
       _buildRow([
-        _buildTextField(_noRegCtrl, 'No. Registrasi'),
+        TextFormField(
+          controller: _noRegCtrl,
+          readOnly: true, // ✅ tidak bisa diedit manual
+          decoration: InputDecoration(
+            labelText: 'No. Registrasi',
+            filled: true,
+            fillColor: AppTheme.primary.withOpacity(0.05),
+            suffixIcon: const Icon(
+              Icons.lock_outline,
+              size: 16,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ),
         _buildTextField(_tingkatCtrl, 'Tingkat'),
-        _buildTextField(_programCtrl, 'Program'),
+        _buildTextField(
+          _programCtrl,
+          'Program',
+          isRequired: true,
+        ),
       ]),
       _buildRow([
         _buildDropdown('Cara Daftar', AppStrings.caraDaftar, _caraDaftar,
@@ -582,9 +689,12 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       _buildTextField(_namaCtrl, 'Nama Lengkap', isRequired: true),
       _buildRow([
         _buildDropdown('Jenis Kelamin', ['L', 'P'], _jenisKelamin,
-            (v) => setState(() => _jenisKelamin = v)),
+            (v) => setState(() => _jenisKelamin = v),
+            isRequired: true),
         _buildTextField(_nisnCtrl, 'NISN',
-            inputType: TextInputType.number, validator: Validators.nisn),
+            isRequired: true,
+            inputType: TextInputType.number,
+            validator: Validators.nisn),
         _buildTextField(_nisCtrl, 'NIS', inputType: TextInputType.number),
       ]),
       _buildRow([
@@ -593,20 +703,27 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         _buildTextField(_noUjianCtrl, 'No. Ujian Nasional'),
       ]),
       _buildRow([
-        _buildTextField(_nikCtrl, 'NIK (KTP)', inputType: TextInputType.number),
+        _buildTextField(_nikCtrl, 'NIK (KTP)',
+            isRequired: true, inputType: TextInputType.number),
         _buildTextField(_npsnCtrl, 'NPSN Sekolah Asal'),
         _buildTextField(_sekolahAsalCtrl, 'Nama Sekolah Asal'),
       ]),
       _buildRow([
-        _buildTextField(_tempatLahirCtrl, 'Tempat Lahir'),
+        _buildTextField(
+          _tempatLahirCtrl,
+          'Tempat Lahir',
+          isRequired: true,
+        ),
         _buildDatePicker('Tanggal Lahir'),
       ]),
       _buildRow([
         _buildDropdown(
-            'Agama',
-            AppStrings.agama,
-            _agamaCtrl.text.isEmpty ? null : _agamaCtrl.text,
-            (v) => setState(() => _agamaCtrl.text = v ?? '')),
+          'Agama',
+          AppStrings.agama,
+          _agamaCtrl.text.isEmpty ? null : _agamaCtrl.text,
+          (v) => setState(() => _agamaCtrl.text = v ?? ''),
+          isRequired: true,
+        ),
         _buildDropdown(
             'Berkebutuhan Khusus',
             ['Tidak', 'Ya'],
@@ -626,21 +743,42 @@ class _PendaftaranPageState extends State<PendaftaranPage>
   Widget _buildTabAlamat() {
     return _TabWrapper(children: [
       _SectionTitle('Alamat Tempat Tinggal'),
-      _buildTextField(_alamatCtrl, 'Alamat Lengkap', maxLines: 2),
+      _buildTextField(_alamatCtrl, 'Alamat Lengkap',
+          isRequired: true, maxLines: 2),
       _buildRow([
         _buildTextField(_rtCtrl, 'RT'),
         _buildTextField(_rwCtrl, 'RW'),
-        _buildTextField(_dusunCtrl, 'Dusun'),
+        _buildTextField(
+          _dusunCtrl,
+          'Dusun',
+          isRequired: true,
+        ),
       ]),
       _buildRow([
-        _buildTextField(_kelurahanCtrl, 'Kelurahan/Desa'),
+        _buildTextField(
+          _kelurahanCtrl,
+          'Kelurahan/Desa',
+          isRequired: true,
+        ),
         _buildTextField(_kodePosCtrl, 'Kode Pos',
             inputType: TextInputType.number),
       ]),
       _buildRow([
-        _buildTextField(_kecamatanCtrl, 'Kecamatan'),
-        _buildTextField(_kabupatenCtrl, 'Kabupaten/Kota'),
-        _buildTextField(_propinsiCtrl, 'Propinsi'),
+        _buildTextField(
+          _kecamatanCtrl,
+          'Kecamatan',
+          isRequired: true,
+        ),
+        _buildTextField(
+          _kabupatenCtrl,
+          'Kabupaten/Kota',
+          isRequired: true,
+        ),
+        _buildTextField(
+          _propinsiCtrl,
+          'Propinsi',
+          isRequired: true,
+        ),
       ]),
       _SectionTitle('Transportasi & Tinggal'),
       _buildRow([
@@ -652,7 +790,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       _SectionTitle('Kontak'),
       _buildRow([
         _buildTextField(_noTelpCtrl, 'No. Telepon Rumah',
-            inputType: TextInputType.phone),
+            isRequired: true, inputType: TextInputType.phone),
         _buildTextField(_noHpCtrl, 'No. HP', inputType: TextInputType.phone),
         _buildTextField(_emailCtrl, 'Email',
             inputType: TextInputType.emailAddress, validator: Validators.email),
@@ -660,8 +798,13 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       _SectionTitle('KKS / KPS / KIP'),
       _buildTextField(_noKksCtrl, 'No. KKS'),
       _buildRow([
-        _buildDropdown('Penerima KPS', ['Ya', 'Tidak'], _penerimaKps,
-            (v) => setState(() => _penerimaKps = v)),
+        _buildDropdown(
+          'Penerima KPS',
+          ['Ya', 'Tidak'],
+          _penerimaKps,
+          (v) => setState(() => _penerimaKps = v),
+          isRequired: true,
+        ),
         _buildTextField(_noKpsCtrl, 'No. KPS'),
       ]),
       _buildRow([
@@ -687,7 +830,11 @@ class _PendaftaranPageState extends State<PendaftaranPage>
     return _TabWrapper(children: [
       _SectionTitle('Data Ayah Kandung'),
       _buildRow([
-        _buildTextField(_namaAyahCtrl, 'Nama Ayah'),
+        _buildTextField(
+          _namaAyahCtrl,
+          'Nama Ayah',
+          isRequired: true,
+        ),
         _buildTextField(_thnAyahCtrl, 'Tahun Lahir',
             inputType: TextInputType.number),
       ]),
@@ -707,7 +854,11 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       ]),
       _SectionTitle('Data Ibu Kandung'),
       _buildRow([
-        _buildTextField(_namaIbuCtrl, 'Nama Ibu'),
+        _buildTextField(
+          _namaIbuCtrl,
+          'Nama Ibu',
+          isRequired: true,
+        ),
         _buildTextField(_thnIbuCtrl, 'Tahun Lahir',
             inputType: TextInputType.number),
       ]),
@@ -873,7 +1024,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
 
   // ─── BOTTOM BAR ──────────────────────────────────────
   Widget _buildBottomBar() {
-    final isLastTab = _tabController.index == 5; // tab terakhir index 5
+    final isLastTab = _tabController.index == 5;
     final isFirstTab = _tabController.index == 0;
 
     return Container(
@@ -906,8 +1057,6 @@ class _PendaftaranPageState extends State<PendaftaranPage>
                   child: const Text('Batal'),
                 ),
               const SizedBox(width: 12),
-
-              // Tombol Lanjut atau Simpan
               isLastTab
                   ? ElevatedButton.icon(
                       onPressed: _isSubmitting ? null : _submit,
@@ -931,6 +1080,26 @@ class _PendaftaranPageState extends State<PendaftaranPage>
                     )
                   : ElevatedButton.icon(
                       onPressed: () {
+                        // ✅ Validasi dulu sebelum lanjut
+                        final error = _validateTab(_tabController.index);
+                        if (error != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded,
+                                      color: Colors.white, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text(error)),
+                                ],
+                              ),
+                              backgroundColor: AppTheme.error,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return; // ✅ stop, tidak pindah tab
+                        }
+                        // Lanjut ke tab berikutnya
                         _tabController.animateTo(_tabController.index + 1);
                         setState(() {});
                       },

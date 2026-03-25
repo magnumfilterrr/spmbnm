@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -8,6 +9,10 @@ import 'package:spmb_app/data/repositories/peserta_repository.dart';
 class CetakKartu {
   static Future<void> cetak(BuildContext context, PesertaModel peserta) async {
     // ✅ Ambil nomor urut & hitung ruang
+    final ttdKepala = await rootBundle.load('assets/images/ks.png');
+    final ttdPanitia = await rootBundle.load('assets/images/ketua.png');
+    final imgKepala = pw.MemoryImage(ttdKepala.buffer.asUint8List());
+    final imgPanitia = pw.MemoryImage(ttdPanitia.buffer.asUint8List());
     final repo = PesertaRepository();
     final nomorUrut = await repo.getNomorUrutPeserta(peserta.id);
     final ruang = PesertaRepository.hitungRuang(nomorUrut);
@@ -26,11 +31,12 @@ class CetakKartu {
         build: (ctx) => pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Expanded(flex: 5, child: _buildJadwal()),
+            pw.Expanded(flex: 5, child: _buildJadwal(imgKepala)),
             pw.SizedBox(width: 12),
             pw.Expanded(
               flex: 5,
-              child: _buildKartu(peserta, nomorUrut, ruang), // ✅ pass ruang
+              child: _buildKartu(
+                  peserta, nomorUrut, ruang, imgPanitia), // ✅ pass ruang
             ),
           ],
         ),
@@ -44,7 +50,7 @@ class CetakKartu {
   }
 
   // ─── JADWAL KEGIATAN ─────────────────────────────────
-  static pw.Widget _buildJadwal() {
+  static pw.Widget _buildJadwal(pw.MemoryImage imgKepala) {
     final jadwalData = [
       [
         'Pendaftaran SPMB',
@@ -151,7 +157,8 @@ class CetakKartu {
                         style: const pw.TextStyle(fontSize: 7)),
                     pw.Text('SMK NUURUL MUTTAQIIN CISURUPAN',
                         style: const pw.TextStyle(fontSize: 7)),
-                    pw.SizedBox(height: 24),
+                    // pw.SizedBox(height: 4),
+                    pw.Image(imgKepala, width: 100, height: 30),
                     pw.Container(
                       width: 110,
                       decoration: const pw.BoxDecoration(
@@ -171,7 +178,8 @@ class CetakKartu {
   }
 
   // ─── KARTU PESERTA ───────────────────────────────────
-  static pw.Widget _buildKartu(PesertaModel peserta, int nomorUrut, int ruang) {
+  static pw.Widget _buildKartu(PesertaModel peserta, int nomorUrut, int ruang,
+      pw.MemoryImage imgPanitia) {
     return pw.Container(
       decoration: pw.BoxDecoration(
         border: pw.Border.all(width: 1),
@@ -316,7 +324,8 @@ class CetakKartu {
                   ),
                   pw.Text('KETUA PANITIA,',
                       style: const pw.TextStyle(fontSize: 7)),
-                  pw.SizedBox(height: 22),
+                  pw.SizedBox(height: 4),
+                  pw.Image(imgPanitia, width: 70, height: 60),
                   pw.Container(
                     width: 90,
                     decoration: const pw.BoxDecoration(

@@ -103,12 +103,12 @@ class _DatabasePageState extends State<DatabasePage> {
           Row(
             children: [
               _buildExportButton(),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                onPressed: () => _openFormTambah(),
-                icon: const Icon(Icons.add),
-                label: const Text('Tambah'),
-              ),
+              // const SizedBox(width: 8),
+              // ElevatedButton.icon(
+              //   onPressed: () => _openFormTambah(),
+              //   icon: const Icon(Icons.add),
+              //   label: const Text('Tambah'),
+              // ),
             ],
           ),
         ],
@@ -605,8 +605,9 @@ class _DatabasePageState extends State<DatabasePage> {
       }
 
       final bytes = excel.save()!;
+      final now = DateTime.now();
       final fileName =
-          'data_peserta_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}.xlsx';
+          'data_peserta_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.xlsx';
 
       if (kIsWeb) {
         // handle web download
@@ -636,6 +637,11 @@ class _DatabasePageState extends State<DatabasePage> {
 
   // ─── EXPORT PDF ──────────────────────────────────────
   Future<void> _exportPdf(List<String> selectedColumns) async {
+    final now = DateTime.now();
+    final tanggalCetak =
+        '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final namaFile =
+        'data_peserta_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
     final state = context.read<DatabaseBloc>().state;
     if (state is! DatabaseLoaded) return;
 
@@ -650,8 +656,7 @@ class _DatabasePageState extends State<DatabasePage> {
                 style:
                     pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 8),
-            pw.Text(
-                'Dicetak: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}',
+            pw.Text('Dicetak: $tanggalCetak',
                 style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 12),
             pw.Table.fromTextArray(
@@ -672,7 +677,7 @@ class _DatabasePageState extends State<DatabasePage> {
 
       await Printing.layoutPdf(
         onLayout: (_) async => pdf.save(),
-        name: 'data_peserta_${DateFormat('yyyyMMdd').format(DateTime.now())}',
+        name: namaFile,
       );
     } catch (e) {
       if (mounted) {
@@ -829,7 +834,11 @@ class _DatabasePageState extends State<DatabasePage> {
   String _formatDate(String? date) {
     if (date == null) return '-';
     try {
-      return DateFormat('dd/MM/yyyy').format(DateTime.parse(date));
+      final dt = DateTime.parse(date);
+      final day = dt.day.toString().padLeft(2, '0');
+      final month = dt.month.toString().padLeft(2, '0');
+      final year = dt.year.toString();
+      return '$day/$month/$year';
     } catch (_) {
       return date;
     }

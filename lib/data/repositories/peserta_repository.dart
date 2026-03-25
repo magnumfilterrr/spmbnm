@@ -2,6 +2,7 @@ import 'package:spmb_app/data/database/database_helper.dart';
 import 'package:spmb_app/data/models/beasiswa_model.dart';
 import 'package:spmb_app/data/models/peserta_model.dart';
 import 'package:spmb_app/data/models/prestasi_model.dart';
+import 'package:sqflite/sqflite.dart';
 
 class PesertaRepository {
   final DatabaseHelper _db = DatabaseHelper.instance;
@@ -161,17 +162,32 @@ class PesertaRepository {
   }
 
   // Ambil nomor urut peserta berdasarkan created_at
-Future<int> getNomorUrutPeserta(String pesertaId) async {
-  final db = await _db.database;
-  final result = await db.rawQuery(
-    'SELECT id FROM peserta_didik ORDER BY created_at ASC',
-  );
-  final index = result.indexWhere((row) => row['id'] == pesertaId);
-  return index + 1; // mulai dari 1
-}
+  Future<int> getNomorUrutPeserta(String pesertaId) async {
+    final db = await _db.database;
+    final result = await db.rawQuery(
+      'SELECT id FROM peserta_didik ORDER BY created_at ASC',
+    );
+    final index = result.indexWhere((row) => row['id'] == pesertaId);
+    return index + 1; // mulai dari 1
+  }
+
+  Future<String> generateNoReg() async {
+    final db = await _db.database;
+
+    // Ambil nomor urut terakhir
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as total FROM peserta_didik',
+    );
+    final total = Sqflite.firstIntValue(result) ?? 0;
+    final nomorUrut = total + 1;
+
+    // Format: 26.27.10.001
+    final urut = nomorUrut.toString().padLeft(3, '0');
+    return '26.27.10.$urut';
+  }
 
 // Hitung ruang dari nomor urut
-static int hitungRuang(int nomorUrut, {int kapasitas = 20}) {
-  return ((nomorUrut - 1) ~/ kapasitas) + 1;
-}
+  static int hitungRuang(int nomorUrut, {int kapasitas = 20}) {
+    return ((nomorUrut - 1) ~/ kapasitas) + 1;
+  }
 }
