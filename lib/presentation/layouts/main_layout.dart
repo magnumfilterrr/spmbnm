@@ -122,7 +122,7 @@ class _MainLayoutState extends State<MainLayout> {
                 Icon(Icons.school_rounded, color: Colors.white, size: 40),
                 SizedBox(height: 12),
                 Text(
-                  'PMB',
+                  'SPMB 2026/2027',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -130,7 +130,7 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                 ),
                 Text(
-                  'Penerimaan Murid Baru',
+                  'Sistem Penerimaan Murid Baru',
                   style: TextStyle(color: Colors.white60, fontSize: 12),
                 ),
               ],

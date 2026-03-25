@@ -129,7 +129,6 @@ class _PendaftaranPageState extends State<PendaftaranPage>
   String? _validateTab(int index) {
     switch (index) {
       case 0:
-        if (_programCtrl.text.trim().isEmpty) return 'Program wajib diisi';
         if (_caraDaftar == null) return 'Cara Daftar wajib dipilih';
         if (_jalurPendaftaran == null) return 'Jalur Pendaftaran wajib dipilih';
         if (_jurusan1 == null) return 'Jurusan Pilihan 1 wajib dipilih';
@@ -161,8 +160,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         if (_noTelpCtrl.text.trim().isEmpty && _noHpCtrl.text.trim().isEmpty) {
           return 'No. Telepon atau No. HP wajib diisi';
         }
-        if (_penerimaKps == null)
-          return 'Status Penerima KPS/PKH wajib dipilih';
+        if (_penerimaKip == null) return 'Status Penerima KIP wajib dipilih';
         return null;
 
       case 3:
@@ -231,6 +229,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
     _sekolahAsalCtrl.text = p.namaSekolahAsal ?? '';
     _tempatLahirCtrl.text = p.tempatLahir ?? '';
     _alamatCtrl.text = p.alamat ?? '';
+    _agamaCtrl.text = p.agama ?? '';
     _rtCtrl.text = p.rt ?? '';
     _rwCtrl.text = p.rw ?? '';
     _dusunCtrl.text = p.dusun ?? '';
@@ -654,12 +653,12 @@ class _PendaftaranPageState extends State<PendaftaranPage>
             ),
           ),
         ),
-        _buildTextField(_tingkatCtrl, 'Tingkat'),
-        _buildTextField(
-          _programCtrl,
-          'Program',
-          isRequired: true,
-        ),
+        // _buildTextField(_tingkatCtrl, 'Tingkat'),
+        // _buildTextField(
+        //   _programCtrl,
+        //   'Program',
+        //   isRequired: true,
+        // ),
       ]),
       _buildRow([
         _buildDropdown('Cara Daftar', AppStrings.caraDaftar, _caraDaftar,
@@ -691,10 +690,25 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         _buildDropdown('Jenis Kelamin', ['L', 'P'], _jenisKelamin,
             (v) => setState(() => _jenisKelamin = v),
             isRequired: true),
-        _buildTextField(_nisnCtrl, 'NISN',
-            isRequired: true,
-            inputType: TextInputType.number,
-            validator: Validators.nisn),
+        TextFormField(
+          controller: _nisnCtrl,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10), // ✅ max 10
+          ],
+          decoration: const InputDecoration(labelText: 'NISN *'),
+          validator: (v) {
+            if (v == null || v.isEmpty) return 'NISN wajib diisi';
+            if (v.length != 10) return 'NISN harus 10 digit';
+            return null;
+          },
+        ),
+
+        // _buildTextField(_nisnCtrl, 'NISN',
+        //     isRequired: true,
+        //     inputType: TextInputType.number,
+        //     validator: Validators.nisn),
         _buildTextField(_nisCtrl, 'NIS', inputType: TextInputType.number),
       ]),
       _buildRow([
@@ -703,8 +717,22 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         _buildTextField(_noUjianCtrl, 'No. Ujian Nasional'),
       ]),
       _buildRow([
-        _buildTextField(_nikCtrl, 'NIK (KTP)',
-            isRequired: true, inputType: TextInputType.number),
+        TextFormField(
+          controller: _nikCtrl,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(16), // ✅ max 16
+          ],
+          decoration: const InputDecoration(labelText: 'NIK (KTP) *'),
+          validator: (v) {
+            if (v == null || v.isEmpty) return 'NIK wajib diisi';
+            if (v.length != 16) return 'NIK harus 16 digit';
+            return null;
+          },
+        ),
+        // _buildTextField(_nikCtrl, 'NIK (KTP)',
+        //     isRequired: true, inputType: TextInputType.number),
         _buildTextField(_npsnCtrl, 'NPSN Sekolah Asal'),
         _buildTextField(_sekolahAsalCtrl, 'Nama Sekolah Asal'),
       ]),
@@ -803,7 +831,6 @@ class _PendaftaranPageState extends State<PendaftaranPage>
           ['Ya', 'Tidak'],
           _penerimaKps,
           (v) => setState(() => _penerimaKps = v),
-          isRequired: true,
         ),
         _buildTextField(_noKpsCtrl, 'No. KPS'),
       ]),
@@ -811,7 +838,8 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         _buildDropdown('Usulan PIP dari Sekolah', ['Ya', 'Tidak'], _usulanPip,
             (v) => setState(() => _usulanPip = v)),
         _buildDropdown('Penerima KIP', ['Ya', 'Tidak'], _penerimaKip,
-            (v) => setState(() => _penerimaKip = v)),
+            (v) => setState(() => _penerimaKip = v),
+            isRequired: true),
       ]),
       if (_penerimaKip == 'Ya') ...[
         _buildRow([

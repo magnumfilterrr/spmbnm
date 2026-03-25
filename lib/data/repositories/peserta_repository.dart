@@ -176,10 +176,22 @@ class PesertaRepository {
 
     // Ambil nomor urut terakhir
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as total FROM peserta_didik',
+      "SELECT no_reg FROM peserta_didik "
+      "WHERE no_reg LIKE '26.27.10.%' "
+      "ORDER BY CAST(SUBSTR(no_reg, 9) AS INTEGER) DESC "
+      "LIMIT 1",
     );
-    final total = Sqflite.firstIntValue(result) ?? 0;
-    final nomorUrut = total + 1;
+    int nomorUrut = 1;
+    if (result.isNotEmpty) {
+      final lastNoReg = result.first['no_reg'] as String?;
+      if (lastNoReg != null) {
+        final parts = lastNoReg.split('.');
+        if (parts.length == 4) {
+          nomorUrut =
+              (int.tryParse(parts[3]) ?? 0) + 1; // ✅ lanjut dari terakhir
+        }
+      }
+    }
 
     // Format: 26.27.10.001
     final urut = nomorUrut.toString().padLeft(3, '0');

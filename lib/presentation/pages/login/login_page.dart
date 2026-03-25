@@ -82,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                     size: 100, color: Colors.white),
                 const SizedBox(height: 24),
                 const Text(
-                  'Sistem Penerimaan\nMurid Baru',
+                  'Sistem Penerimaan Murid Baru\nSMK NUURUL MUTTAQIIN\nTahun Ajaran 2026/2027',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -147,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                 Icon(Icons.school_rounded, size: 72, color: Colors.white),
                 SizedBox(height: 16),
                 Text(
-                  'Sistem PMB',
+                  'SPMB',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -156,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Penerimaan Murid Baru',
+                  'Sistem Penerimaan Murid Baru',
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
@@ -260,8 +260,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed:
-                          state is AuthLoading ? null : _onLogin,
+                      onPressed: state is AuthLoading ? null : _onLogin,
                       child: state is AuthLoading
                           ? const SizedBox(
                               width: 22,

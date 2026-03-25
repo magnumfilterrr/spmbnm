@@ -413,12 +413,12 @@ class _DatabasePageState extends State<DatabasePage> {
           const SizedBox(height: 8),
           const Text('Tambahkan peserta baru melalui form pendaftaran',
               style: TextStyle(color: AppTheme.textSecondary)),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: _openFormTambah,
-            icon: const Icon(Icons.add),
-            label: const Text('Tambah Peserta'),
-          ),
+          // const SizedBox(height: 20),
+          // ElevatedButton.icon(
+          //   onPressed: _openFormTambah,
+          //   icon: const Icon(Icons.add),
+          //   label: const Text('Tambah Peserta'),
+          // ),
         ],
       ),
     );
