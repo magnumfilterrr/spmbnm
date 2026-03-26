@@ -516,7 +516,7 @@ class _PendaftaranPageState extends State<PendaftaranPage>
   @override
   Widget build(BuildContext context) {
     return BlocListener<PendaftaranBloc, PendaftaranState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is PendaftaranSuccess) {
           setState(() {
             _isSubmitting = false;
@@ -534,6 +534,36 @@ class _PendaftaranPageState extends State<PendaftaranPage>
             Navigator.pop(context);
           else {
             _formKey.currentState?.reset();
+            setState(() {
+              _caraDaftar = null;
+              _jalurPendaftaran = null;
+              _jurusan1 = null;
+              _jurusan2 = null;
+              _jenisKelamin = null;
+              _agamaCtrl.text = '';
+              _berkebutuhanKhusus = null;
+              _jenisTinggal = null;
+              _alatTransportasi = null;
+              _penerimaKps = null;
+              _usulanPip = null;
+              _penerimaKip = null;
+              _kebutuhanKhususAyah = null;
+              _pendidikanAyah = null;
+              _penghasilanAyah = null;
+              _kebutuhanKhususIbu = null;
+              _pendidikanIbu = null;
+              _penghasilanIbu = null;
+              _pendidikanWali = null;
+              _penghasilanWali = null;
+              _tglLahir = null;
+              _prestasiList = [];
+              _beasiswaList = [];
+            });
+
+            await Future.delayed(const Duration(milliseconds: 300));
+            _generateNoReg();
+
+            _tabController.animateTo(0);
             context.read<PendaftaranBloc>().add(ResetPendaftaran());
           }
         } else if (state is PendaftaranFailure) {

@@ -172,31 +172,29 @@ class PesertaRepository {
   }
 
   Future<String> generateNoReg() async {
-    final db = await _db.database;
+  final db = await _db.database;
 
-    // Ambil nomor urut terakhir
-    final result = await db.rawQuery(
-      "SELECT no_reg FROM peserta_didik "
-      "WHERE no_reg LIKE '26.27.10.%' "
-      "ORDER BY CAST(SUBSTR(no_reg, 9) AS INTEGER) DESC "
-      "LIMIT 1",
-    );
-    int nomorUrut = 1;
-    if (result.isNotEmpty) {
-      final lastNoReg = result.first['no_reg'] as String?;
-      if (lastNoReg != null) {
-        final parts = lastNoReg.split('.');
-        if (parts.length == 4) {
-          nomorUrut =
-              (int.tryParse(parts[3]) ?? 0) + 1; // ✅ lanjut dari terakhir
-        }
-      }
+  // ✅ Ambil semua no_reg lalu cari yang terbesar di Dart
+  final result = await db.rawQuery(
+    "SELECT no_reg FROM peserta_didik WHERE no_reg IS NOT NULL AND no_reg != ''",
+  );
+
+  int maxUrut = 0;
+
+  for (final row in result) {
+    final noReg = row['no_reg'] as String?;
+    if (noReg == null) continue;
+    final parts = noReg.split('.');
+    if (parts.length == 4) {
+      final urut = int.tryParse(parts[3]) ?? 0;
+      if (urut > maxUrut) maxUrut = urut;
     }
-
-    // Format: 26.27.10.001
-    final urut = nomorUrut.toString().padLeft(3, '0');
-    return '26.27.10.$urut';
   }
+
+  final nomorUrut = maxUrut + 1;
+  final urut = nomorUrut.toString().padLeft(3, '0');
+  return '26.27.10.$urut';
+}
 
 // Hitung ruang dari nomor urut
   static int hitungRuang(int nomorUrut, {int kapasitas = 20}) {

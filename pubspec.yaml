@@ -51,6 +51,7 @@ dependencies:
   uuid: ^4.4.0 # generate ID unik
   shared_preferences: ^2.2.3
   sqflite_common_ffi_web: ^0.4.5+4
+  bloc_concurrency: ^0.2.5
 
 dev_dependencies:
   flutter_test:
