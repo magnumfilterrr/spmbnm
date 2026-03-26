@@ -19,6 +19,7 @@ import 'package:spmb_app/logic/database/database_bloc.dart';
 import 'package:spmb_app/logic/database/database_event.dart';
 import 'package:spmb_app/logic/database/database_state.dart';
 import 'package:spmb_app/presentation/pages/pendaftaran/pendaftaran_page.dart';
+import 'package:spmb_app/presentation/pages/pendaftaran/widgets/cetak_kartu.dart';
 
 class DatabasePage extends StatefulWidget {
   const DatabasePage({super.key});
@@ -33,6 +34,10 @@ class _DatabasePageState extends State<DatabasePage> {
   String? _filterJalur;
   String? _filterGender;
   int _rowsPerPage = 10;
+
+  void _cetakKartu(PesertaModel peserta) {
+    CetakKartu.cetak(context, peserta);
+  }
 
   @override
   void dispose() {
@@ -304,7 +309,7 @@ class _DatabasePageState extends State<DatabasePage> {
         child: DataTable2(
           columnSpacing: 12,
           horizontalMargin: 16,
-          minWidth: 900,
+          minWidth: 1000,
           headingRowColor:
               WidgetStateProperty.all(AppTheme.primary.withOpacity(0.08)),
           columns: const [
@@ -316,7 +321,7 @@ class _DatabasePageState extends State<DatabasePage> {
             DataColumn2(label: Text('Jalur'), size: ColumnSize.S),
             DataColumn2(label: Text('Cara Daftar'), size: ColumnSize.S),
             DataColumn2(label: Text('Tgl Daftar'), size: ColumnSize.S),
-            DataColumn2(label: Text('Aksi'), fixedWidth: 120),
+            DataColumn2(label: Text('Aksi'), fixedWidth: 160),
           ],
           rows: list.asMap().entries.map((e) {
             final i = e.key;
@@ -336,6 +341,12 @@ class _DatabasePageState extends State<DatabasePage> {
                 DataCell(Text(_formatDate(p.createdAt))),
                 DataCell(Row(
                   children: [
+                    IconButton(
+                      tooltip: 'Cetak Kartu',
+                      icon: const Icon(Icons.print_outlined,
+                          color: Colors.green, size: 20),
+                      onPressed: () => _cetakKartu(p),
+                    ),
                     IconButton(
                       tooltip: 'Edit',
                       icon: const Icon(Icons.edit_outlined,
@@ -382,10 +393,19 @@ class _DatabasePageState extends State<DatabasePage> {
             ),
             trailing: PopupMenuButton(
               itemBuilder: (_) => [
+                const PopupMenuItem(
+                  value: 'cetak',
+                  child: Row(children: [
+                    Icon(Icons.print_outlined, color: Colors.green, size: 18),
+                    SizedBox(width: 8),
+                    Text('Cetak Kartu'),
+                  ]),
+                ),
                 const PopupMenuItem(value: 'edit', child: Text('Edit')),
                 const PopupMenuItem(value: 'hapus', child: Text('Hapus')),
               ],
               onSelected: (v) {
+                if (v == 'cetak') _cetakKartu(p);
                 if (v == 'edit') _openFormEdit(p);
                 if (v == 'hapus') _confirmDelete(p);
               },

@@ -848,8 +848,9 @@ class _PendaftaranPageState extends State<PendaftaranPage>
       _SectionTitle('Kontak'),
       _buildRow([
         _buildTextField(_noTelpCtrl, 'No. Telepon Rumah',
+            inputType: TextInputType.phone),
+        _buildTextField(_noHpCtrl, 'No. HP',
             isRequired: true, inputType: TextInputType.phone),
-        _buildTextField(_noHpCtrl, 'No. HP', inputType: TextInputType.phone),
         _buildTextField(_emailCtrl, 'Email',
             inputType: TextInputType.emailAddress, validator: Validators.email),
       ]),
