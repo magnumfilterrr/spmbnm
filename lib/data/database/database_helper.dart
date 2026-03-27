@@ -42,4 +42,8 @@ class DatabaseHelper {
     final db = await database;
     db.close();
   }
+  Future<String> getDatabasePath() async {
+  final dbPath = await getDatabasesPath();
+  return join(dbPath, 'pmb.db');
+}
 }

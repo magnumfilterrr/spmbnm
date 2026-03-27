@@ -12,7 +12,9 @@ import 'package:printing/printing.dart';
 import 'package:spmb_app/core/constants/app_strings.dart';
 import 'package:spmb_app/core/theme/app_theme.dart';
 import 'package:spmb_app/core/utils/responsive_helper.dart';
+import 'package:spmb_app/data/database/database_helper.dart';
 import 'package:spmb_app/data/models/peserta_model.dart';
+import 'package:spmb_app/data/repositories/peserta_repository.dart';
 import 'package:spmb_app/logic/dashboard/dashboard_bloc.dart';
 import 'package:spmb_app/logic/dashboard/dashboard_event.dart';
 import 'package:spmb_app/logic/database/database_bloc.dart';
@@ -37,6 +39,61 @@ class _DatabasePageState extends State<DatabasePage> {
 
   void _cetakKartu(PesertaModel peserta) {
     CetakKartu.cetak(context, peserta);
+  }
+
+  Future<List<Map<String, String>>> _buildExportData(
+      List<PesertaModel> list) async {
+    final repo = PesertaRepository();
+    final result = <Map<String, String>>[];
+
+    for (var i = 0; i < list.length; i++) {
+      final p = list[i];
+      final nomorUrut = await repo.getNomorUrutPeserta(p.id);
+      final ruang = PesertaRepository.hitungRuang(nomorUrut);
+
+      result.add({
+        'No': '${i + 1}',
+        'No Registrasi': p.noReg ?? '-',
+        'Nama Lengkap': p.namaLengkap,
+        'Jenis Kelamin': p.jenisKelamin ?? '-',
+        'NISN': p.nisn ?? '-',
+        'NIS': p.nis ?? '-',
+        'NIK': p.nik ?? '-',
+        'Tempat Lahir': p.tempatLahir ?? '-',
+        'Tanggal Lahir': p.tglLahir ?? '-',
+        'Agama': p.agama ?? '-',
+        'Sekolah Asal': p.namaSekolahAsal ?? '-',
+        'Jurusan 1': p.jurusan1 ?? '-',
+        'Jurusan 2': p.jurusan2 ?? '-',
+        'Jalur Pendaftaran': p.jalurPendaftaran ?? '-',
+        'Cara Daftar': p.caraDaftar,
+        'Alamat': p.alamat ?? '-',
+        'RT': p.rt ?? '-',
+        'RW': p.rw ?? '-',
+        'Dusun': p.dusun ?? '-',
+        'Kelurahan': p.kelurahan ?? '-',
+        'Kecamatan': p.kecamatan ?? '-',
+        'Kabupaten': p.kabupaten ?? '-',
+        'Propinsi': p.propinsi ?? '-',
+        'No HP': p.noHp ?? '-',
+        'Email': p.email ?? '-',
+        'No KKS': p.noKks ?? '-',
+        'Penerima KPS': p.penerimaKps ?? '-',
+        'Nama Ayah': p.namaAyah ?? '-',
+        'Pekerjaan Ayah': p.pekerjaanAyah ?? '-',
+        'Pendidikan Ayah': p.pendidikanAyah ?? '-',
+        'Penghasilan Ayah': p.penghasilanAyah ?? '-',
+        'Nama Ibu': p.namaIbu ?? '-',
+        'Pekerjaan Ibu': p.pekerjaanIbu ?? '-',
+        'Pendidikan Ibu': p.pendidikanIbu ?? '-',
+        'Penghasilan Ibu': p.penghasilanIbu ?? '-',
+        'Tinggi Badan': p.tinggiBadan?.toString() ?? '-',
+        'Berat Badan': p.beratBadan?.toString() ?? '-',
+        'Tanggal Daftar': _formatDate(p.createdAt),
+        'Ruang': '$ruang', // ✅ tambah ruang
+      });
+    }
+    return result;
   }
 
   @override
@@ -108,7 +165,56 @@ class _DatabasePageState extends State<DatabasePage> {
           Row(
             children: [
               _buildExportButton(),
-              // const SizedBox(width: 8),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Info Database',
+                icon: const Icon(Icons.info_outline,
+                    color: AppTheme.textSecondary),
+                onPressed: () async {
+                  final path = await DatabaseHelper.instance.getDatabasePath();
+                  if (mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Lokasi Database'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('File database tersimpan di:',
+                                style:
+                                    TextStyle(color: AppTheme.textSecondary)),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppTheme.background,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppTheme.border),
+                              ),
+                              child: SelectableText(
+                                // ✅ bisa dicopy
+                                path,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontFamily: 'monospace',
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
               // ElevatedButton.icon(
               //   onPressed: () => _openFormTambah(),
               //   icon: const Icon(Icons.add),
@@ -519,6 +625,7 @@ class _DatabasePageState extends State<DatabasePage> {
       'Tinggi Badan': false,
       'Berat Badan': false,
       'Tanggal Daftar': true,
+      'Ruang': true,
     };
 
     final selected = Map<String, bool>.from(allColumns);
@@ -602,10 +709,13 @@ class _DatabasePageState extends State<DatabasePage> {
     if (state is! DatabaseLoaded) return;
 
     try {
+      // ✅ Build data dengan ruang
+      final exportData = await _buildExportData(state.pesertaList);
+
       final excel = Excel.createExcel();
       final sheet = excel['Data Peserta'];
 
-      // Header sesuai pilihan
+      // Header
       for (var i = 0; i < selectedColumns.length; i++) {
         final cell =
             sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0));
@@ -614,23 +724,23 @@ class _DatabasePageState extends State<DatabasePage> {
       }
 
       // Data
-      for (var i = 0; i < state.pesertaList.length; i++) {
-        final p = state.pesertaList[i];
-        final rowData = _mapPesertaToColumns(p, selectedColumns, i + 1);
-        for (var j = 0; j < rowData.length; j++) {
+      for (var i = 0; i < exportData.length; i++) {
+        final row = exportData[i];
+        for (var j = 0; j < selectedColumns.length; j++) {
           sheet
               .cell(CellIndex.indexByColumnRow(columnIndex: j, rowIndex: i + 1))
-              .value = TextCellValue(rowData[j]);
+              .value = TextCellValue(row[selectedColumns[j]] ?? '-');
         }
       }
 
-      final bytes = excel.save()!;
       final now = DateTime.now();
       final fileName =
-          'data_peserta_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.xlsx';
+          'data_peserta_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}.xlsx';
+
+      final bytes = excel.save()!;
 
       if (kIsWeb) {
-        // handle web download
+        // web download
       } else {
         final dir = await getApplicationDocumentsDirectory();
         final file = File('${dir.path}/$fileName');
@@ -657,16 +767,17 @@ class _DatabasePageState extends State<DatabasePage> {
 
   // ─── EXPORT PDF ──────────────────────────────────────
   Future<void> _exportPdf(List<String> selectedColumns) async {
-    final now = DateTime.now();
-    final tanggalCetak =
-        '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    final namaFile =
-        'data_peserta_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
     final state = context.read<DatabaseBloc>().state;
     if (state is! DatabaseLoaded) return;
 
     try {
+      // ✅ Build data dengan ruang
+      final exportData = await _buildExportData(state.pesertaList);
+
       final pdf = pw.Document();
+      final now = DateTime.now();
+      final tanggalCetak =
+          '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
 
       pdf.addPage(
         pw.MultiPage(
@@ -681,19 +792,22 @@ class _DatabasePageState extends State<DatabasePage> {
             pw.SizedBox(height: 12),
             pw.Table.fromTextArray(
               headers: selectedColumns,
-              data: state.pesertaList.asMap().entries.map((e) {
-                return _mapPesertaToColumns(
-                    e.value, selectedColumns, e.key + 1);
+              data: exportData.map((row) {
+                return selectedColumns.map((col) => row[col] ?? '-').toList();
               }).toList(),
               headerStyle:
                   pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
               cellStyle: const pw.TextStyle(fontSize: 8),
               headerDecoration:
                   const pw.BoxDecoration(color: PdfColors.blueGrey100),
+              cellAlignments: {0: pw.Alignment.center},
             ),
           ],
         ),
       );
+
+      final namaFile =
+          'data_peserta_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
 
       await Printing.layoutPdf(
         onLayout: (_) async => pdf.save(),

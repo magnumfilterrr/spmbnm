@@ -29,7 +29,7 @@ class CetakKartu {
     final pdf = pw.Document();
 
     const pageFormat = PdfPageFormat(
-      22 * PdfPageFormat.cm,
+      21.7 * PdfPageFormat.cm,
       13 * PdfPageFormat.cm,
     );
 
@@ -415,9 +415,9 @@ class CetakKartu {
   static String _formatAlamat(PesertaModel peserta) {
     final parts = <String>[];
 
-    if (peserta.alamat != null && peserta.alamat!.isNotEmpty) {
-      parts.add(peserta.alamat!);
-    }
+    // if (peserta.alamat != null && peserta.alamat!.isNotEmpty) {
+    //   parts.add(peserta.alamat!);
+    // }
     if (peserta.dusun != null && peserta.dusun!.isNotEmpty) {
       parts.add('Dusun ${peserta.dusun!}');
     }

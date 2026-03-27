@@ -24,12 +24,18 @@ class _MainLayoutState extends State<MainLayout> {
   late int _selectedIndex;
 
   final List<_NavItem> _navItems = [
-    _NavItem(icon: Icons.dashboard_outlined,
-        activeIcon: Icons.dashboard, label: 'Dashboard'),
-    _NavItem(icon: Icons.app_registration_outlined,
-        activeIcon: Icons.app_registration, label: 'Pendaftaran'),
-    _NavItem(icon: Icons.table_chart_outlined,
-        activeIcon: Icons.table_chart, label: 'Database'),
+    _NavItem(
+        icon: Icons.dashboard_outlined,
+        activeIcon: Icons.dashboard,
+        label: 'Dashboard'),
+    _NavItem(
+        icon: Icons.app_registration_outlined,
+        activeIcon: Icons.app_registration,
+        label: 'Pendaftaran'),
+    _NavItem(
+        icon: Icons.table_chart_outlined,
+        activeIcon: Icons.table_chart,
+        label: 'Database'),
   ];
 
   @override
@@ -46,10 +52,14 @@ class _MainLayoutState extends State<MainLayout> {
 
   Widget _getPage(int index) {
     switch (index) {
-      case 0: return const DashboardPage();
-      case 1: return const PendaftaranPage();
-      case 2: return const DatabasePage();
-      default: return const DashboardPage();
+      case 0:
+        return const DashboardPage();
+      case 1:
+        return const PendaftaranPage();
+      case 2:
+        return const DatabasePage();
+      default:
+        return const DashboardPage();
     }
   }
 
@@ -116,10 +126,15 @@ class _MainLayoutState extends State<MainLayout> {
           // Header
           Container(
             padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.school_rounded, color: Colors.white, size: 40),
+                Image.asset(
+                  'assets/images/nm.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
                 SizedBox(height: 12),
                 Text(
                   'SPMB 2026/2027',
@@ -158,8 +173,8 @@ class _MainLayoutState extends State<MainLayout> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
               leading: const Icon(Icons.logout, color: Colors.white70),
-              title: const Text('Logout',
-                  style: TextStyle(color: Colors.white70)),
+              title:
+                  const Text('Logout', style: TextStyle(color: Colors.white70)),
               onTap: _showLogoutDialog,
             ),
           ),
@@ -185,8 +200,7 @@ class _MainLayoutState extends State<MainLayout> {
           item.label,
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.white60,
-            fontWeight:
-                isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
         onTap: () => setState(() => _selectedIndex = index),
