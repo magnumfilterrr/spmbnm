@@ -143,6 +143,8 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         if (_jenisKelamin == null) return 'Jenis Kelamin wajib dipilih';
         if (_nisnCtrl.text.trim().isEmpty) return 'NISN wajib diisi';
         if (_nikCtrl.text.trim().isEmpty) return 'NIK wajib diisi';
+        if (_sekolahAsalCtrl.text.trim().isEmpty)
+          return 'Nama Sekolah Asal wajib diisi';
         if (_tempatLahirCtrl.text.trim().isEmpty)
           return 'Tempat Lahir wajib diisi';
         if (_tglLahir == null) return 'Tanggal Lahir wajib diisi';
@@ -764,7 +766,8 @@ class _PendaftaranPageState extends State<PendaftaranPage>
         // _buildTextField(_nikCtrl, 'NIK (KTP)',
         //     isRequired: true, inputType: TextInputType.number),
         _buildTextField(_npsnCtrl, 'NPSN Sekolah Asal'),
-        _buildTextField(_sekolahAsalCtrl, 'Nama Sekolah Asal'),
+        _buildTextField(_sekolahAsalCtrl, 'Nama Sekolah Asal',
+            isRequired: true),
       ]),
       _buildRow([
         _buildTextField(
