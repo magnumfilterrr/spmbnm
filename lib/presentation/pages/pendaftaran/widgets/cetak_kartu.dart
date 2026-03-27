@@ -29,7 +29,7 @@ class CetakKartu {
     final pdf = pw.Document();
 
     const pageFormat = PdfPageFormat(
-      20 * PdfPageFormat.cm,
+      28 * PdfPageFormat.cm,
       13 * PdfPageFormat.cm,
     );
 
@@ -281,7 +281,7 @@ class CetakKartu {
                       'TEMPAT/TGL LAHIR',
                       '${peserta.tempatLahir ?? '-'}, ${_formatTgl(peserta.tglLahir)}',
                     ),
-                    _infoRow('ALAMAT', peserta.alamat ?? '-'),
+                    _infoRow('ALAMAT', _formatAlamat(peserta)),
                     _infoRow('No.HP/WA', peserta.noHp ?? '-'),
                     _infoRow('SEKOLAH ASAL', peserta.namaSekolahAsal ?? '-'),
                   ],
@@ -410,6 +410,39 @@ class CetakKartu {
         ],
       ),
     );
+  }
+
+  static String _formatAlamat(PesertaModel peserta) {
+    final parts = <String>[];
+
+    if (peserta.alamat != null && peserta.alamat!.isNotEmpty) {
+      parts.add(peserta.alamat!);
+    }
+    if (peserta.dusun != null && peserta.dusun!.isNotEmpty) {
+      parts.add('Dusun ${peserta.dusun!}');
+    }
+    if (peserta.rt != null &&
+        peserta.rt!.isNotEmpty &&
+        peserta.rw != null &&
+        peserta.rw!.isNotEmpty) {
+      parts.add('RT ${peserta.rt!} / RW ${peserta.rw!}');
+    } else if (peserta.rt != null && peserta.rt!.isNotEmpty) {
+      parts.add('RT ${peserta.rt!}');
+    }
+    if (peserta.kelurahan != null && peserta.kelurahan!.isNotEmpty) {
+      parts.add('Desa ${peserta.kelurahan!}');
+    }
+    if (peserta.kecamatan != null && peserta.kecamatan!.isNotEmpty) {
+      parts.add('Kec. ${peserta.kecamatan!}');
+    }
+    if (peserta.kabupaten != null && peserta.kabupaten!.isNotEmpty) {
+      parts.add('Kab. ${peserta.kabupaten!}');
+    }
+    if (peserta.propinsi != null && peserta.propinsi!.isNotEmpty) {
+      parts.add(peserta.propinsi!);
+    }
+
+    return parts.isEmpty ? '-' : parts.join(', ');
   }
 
   static String _formatTgl(String? tgl) {

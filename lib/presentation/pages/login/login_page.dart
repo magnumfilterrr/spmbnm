@@ -78,8 +78,12 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.school_rounded,
-                    size: 100, color: Colors.white),
+                Image.asset(
+                  'assets/images/nm.png',
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
                 const SizedBox(height: 24),
                 const Text(
                   'Sistem Penerimaan Murid Baru\nSMK NUURUL MUTTAQIIN\nTahun Ajaran 2026/2027',
