@@ -29,7 +29,7 @@ class CetakKartu {
     final pdf = pw.Document();
 
     const pageFormat = PdfPageFormat(
-      28 * PdfPageFormat.cm,
+      22 * PdfPageFormat.cm,
       13 * PdfPageFormat.cm,
     );
 
