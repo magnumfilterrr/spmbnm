@@ -126,8 +126,9 @@ class _MainLayoutState extends State<MainLayout> {
           // Header
           Container(
             padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
+            width: double.infinity, // ✅
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Image.asset(
                   'assets/images/nm.png',
@@ -138,6 +139,7 @@ class _MainLayoutState extends State<MainLayout> {
                 SizedBox(height: 12),
                 Text(
                   'SPMB 2026/2027',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -146,6 +148,7 @@ class _MainLayoutState extends State<MainLayout> {
                 ),
                 Text(
                   'Sistem Penerimaan Murid Baru',
+                  textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.white60, fontSize: 12),
                 ),
               ],

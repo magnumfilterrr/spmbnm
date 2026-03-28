@@ -184,7 +184,7 @@ class CetakKartu {
                       // Tanda tangan (di atas, melayang)
                       pw.Positioned(
                         // sesuaikan agar ttd tepat di atas garis
-                        child: pw.Image(imgKepala, width: 50, height: 50),
+                        child: pw.Image(imgKepala, width: 50, height: 100),
                       ),
                     ],
                   ),

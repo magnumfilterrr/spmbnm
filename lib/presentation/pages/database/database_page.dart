@@ -68,6 +68,9 @@ class _DatabasePageState extends State<DatabasePage> {
         'Jalur Pendaftaran': p.jalurPendaftaran ?? '-',
         'Cara Daftar': p.caraDaftar,
         'Alamat': p.alamat ?? '-',
+        'Nama Kolektif': p.caraDaftar == 'Kolektif' // ✅
+            ? (p.namaKolektif ?? '-')
+            : '-',
         'RT': p.rt ?? '-',
         'RW': p.rw ?? '-',
         'Dusun': p.dusun ?? '-',
@@ -603,6 +606,7 @@ class _DatabasePageState extends State<DatabasePage> {
       'Jurusan 2': false,
       'Jalur Pendaftaran': true,
       'Cara Daftar': true,
+      'Nama Kolektif': true,
       'Alamat': false,
       'RT': false,
       'RW': false,
