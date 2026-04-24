@@ -723,19 +723,39 @@ class _PendaftaranPageState extends State<PendaftaranPage>
             (v) => setState(() => _jenisKelamin = v),
             isRequired: true),
         TextFormField(
-          controller: _nisnCtrl,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(10), // ✅ max 10
-          ],
-          decoration: const InputDecoration(labelText: 'NISN *'),
-          validator: (v) {
-            if (v == null || v.isEmpty) return 'NISN wajib diisi';
-            if (v.length != 10) return 'NISN harus 10 digit';
-            return null;
-          },
-        ),
+  controller: _nisnCtrl,
+  keyboardType: TextInputType.number,
+  inputFormatters: [
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(10),
+  ],
+  decoration: const InputDecoration(labelText: 'NISN *'),
+  validator: (v) {
+    if (v == null || v.isEmpty) return 'NISN wajib diisi';
+    if (v.length != 10) return 'NISN harus 10 digit';
+    return null;
+  },
+  onChanged: (v) async {
+    // ✅ Cek realtime saat NISN sudah 10 digit
+    if (v.length == 10) {
+      final repo = context.read<PesertaRepository>();
+      final terdaftar = await repo.isNisnTerdaftar(
+        v,
+        excludeId: isEdit ? widget.peserta?.id : null,
+      );
+      if (terdaftar && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ NISN sudah terdaftar!'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  },
+),
 
         // _buildTextField(_nisnCtrl, 'NISN',
         //     isRequired: true,

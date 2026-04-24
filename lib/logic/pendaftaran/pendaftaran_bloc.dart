@@ -26,7 +26,7 @@ class PendaftaranBloc extends Bloc<PendaftaranEvent, PendaftaranState> {
 
   Future<void> _onSubmit(
       SubmitPendaftaran event, Emitter<PendaftaranState> emit) async {
-    if (_isProcessing) return; // ✅ double guard
+    if (_isProcessing) return;
     _isProcessing = true;
     emit(PendaftaranLoading());
     try {
@@ -37,10 +37,18 @@ class PendaftaranBloc extends Bloc<PendaftaranEvent, PendaftaranState> {
       );
       _databaseBloc.add(LoadPeserta());
       emit(PendaftaranSuccess('Data berhasil disimpan'));
-    } catch (e) {
-      emit(PendaftaranFailure('Gagal menyimpan data: $e'));
+    } on Exception catch (e) {
+      // ✅ Tampilkan pesan error spesifik
+      emit(PendaftaranFailure
+      
+      
+      
+      
+      
+      
+      (e.toString().replaceAll('Exception: ', '')));
     } finally {
-      _isProcessing = false; // ✅ selalu reset
+      _isProcessing = false;
     }
   }
 

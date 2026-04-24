@@ -15,7 +15,7 @@ class CreateTableSQL {
       id TEXT PRIMARY KEY,
       -- Header
       tanggal TEXT,
-      no_reg TEXT,
+      no_reg TEXT UNIQUE,
       tingkat TEXT,
       program TEXT,
       cara_daftar TEXT,
@@ -27,7 +27,7 @@ class CreateTableSQL {
       -- Identitas
       nama_lengkap TEXT NOT NULL,
       jenis_kelamin TEXT,
-      nisn TEXT,
+      nisn TEXT UNIQUE,
       nis TEXT,
       no_seri_ijazah TEXT,
       no_seri_skhun TEXT,

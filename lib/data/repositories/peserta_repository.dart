@@ -7,28 +7,49 @@ import 'package:sqflite/sqflite.dart';
 class PesertaRepository {
   final DatabaseHelper _db = DatabaseHelper.instance;
 
+  Future<bool> isNisnTerdaftar(String nisn, {String? excludeId}) async {
+  final db = await _db.database;
+  final result = await db.query(
+    'peserta_didik',
+    where: excludeId != null
+        ? 'nisn = ? AND id != ?'
+        : 'nisn = ?',
+    whereArgs: excludeId != null ? [nisn, excludeId] : [nisn],
+  );
+  return result.isNotEmpty;
+}
+
+
   // ─── CREATE ───────────────────────────────────────────
   Future<void> insertPeserta(
-    PesertaModel peserta, {
-    List<PrestasiModel>? prestasi,
-    List<BeasiswaModel>? beasiswa,
-  }) async {
-    final db = await _db.database;
-    await db.transaction((txn) async {
-      await txn.insert('peserta_didik', peserta.toMap());
+  PesertaModel peserta, {
+  List<PrestasiModel>? prestasi,
+  List<BeasiswaModel>? beasiswa,
+}) async {
+  final db = await _db.database;
 
-      if (prestasi != null) {
-        for (final p in prestasi) {
-          await txn.insert('prestasi', p.toMap());
-        }
-      }
-      if (beasiswa != null) {
-        for (final b in beasiswa) {
-          await txn.insert('beasiswa', b.toMap());
-        }
-      }
-    });
+  // ✅ Validasi NISN unik
+  if (peserta.nisn != null && peserta.nisn!.isNotEmpty) {
+    final terdaftar = await isNisnTerdaftar(peserta.nisn!);
+    if (terdaftar) {
+      throw Exception('NISN ${peserta.nisn} sudah terdaftar');
+    }
   }
+
+  await db.transaction((txn) async {
+    await txn.insert('peserta_didik', peserta.toMap());
+    if (prestasi != null) {
+      for (final p in prestasi) {
+        await txn.insert('prestasi', p.toMap());
+      }
+    }
+    if (beasiswa != null) {
+      for (final b in beasiswa) {
+        await txn.insert('beasiswa', b.toMap());
+      }
+    }
+  });
+}
 
   // ─── READ ALL ─────────────────────────────────────────
   Future<List<PesertaModel>> getAllPeserta() async {
@@ -75,36 +96,46 @@ class PesertaRepository {
 
   // ─── UPDATE ───────────────────────────────────────────
   Future<void> updatePeserta(
-    PesertaModel peserta, {
-    List<PrestasiModel>? prestasi,
-    List<BeasiswaModel>? beasiswa,
-  }) async {
-    final db = await _db.database;
-    await db.transaction((txn) async {
-      await txn.update(
-        'peserta_didik',
-        peserta.toMap(),
-        where: 'id = ?',
-        whereArgs: [peserta.id],
-      );
+  PesertaModel peserta, {
+  List<PrestasiModel>? prestasi,
+  List<BeasiswaModel>? beasiswa,
+}) async {
+  final db = await _db.database;
 
-      // Hapus lama, insert baru
-      if (prestasi != null) {
-        await txn.delete('prestasi',
-            where: 'peserta_id = ?', whereArgs: [peserta.id]);
-        for (final p in prestasi) {
-          await txn.insert('prestasi', p.toMap());
-        }
-      }
-      if (beasiswa != null) {
-        await txn.delete('beasiswa',
-            where: 'peserta_id = ?', whereArgs: [peserta.id]);
-        for (final b in beasiswa) {
-          await txn.insert('beasiswa', b.toMap());
-        }
-      }
-    });
+  // ✅ Validasi NISN unik (exclude diri sendiri)
+  if (peserta.nisn != null && peserta.nisn!.isNotEmpty) {
+    final terdaftar = await isNisnTerdaftar(
+      peserta.nisn!,
+      excludeId: peserta.id,
+    );
+    if (terdaftar) {
+      throw Exception('NISN ${peserta.nisn} sudah digunakan peserta lain');
+    }
   }
+
+  await db.transaction((txn) async {
+    await txn.update(
+      'peserta_didik',
+      peserta.toMap(),
+      where: 'id = ?',
+      whereArgs: [peserta.id],
+    );
+    if (prestasi != null) {
+      await txn.delete('prestasi',
+          where: 'peserta_id = ?', whereArgs: [peserta.id]);
+      for (final p in prestasi) {
+        await txn.insert('prestasi', p.toMap());
+      }
+    }
+    if (beasiswa != null) {
+      await txn.delete('beasiswa',
+          where: 'peserta_id = ?', whereArgs: [peserta.id]);
+      for (final b in beasiswa) {
+        await txn.insert('beasiswa', b.toMap());
+      }
+    }
+  });
+}
 
   // ─── DELETE ───────────────────────────────────────────
   Future<void> deletePeserta(String id) async {
