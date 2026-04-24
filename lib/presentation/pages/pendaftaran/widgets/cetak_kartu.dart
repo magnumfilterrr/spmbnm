@@ -68,8 +68,8 @@ class CetakKartu {
       ],
       [
         'Rapat Orang Tua\nPeserta Didik Baru',
-        'Selasa,\n30 April 2025',
-        'Senin,\n7 Juli 2025'
+        'Sabtu,\n25 April 2026',
+        'Sabtu,\n4 Juli 2026'
       ],
       [
         'Daftar Ulang Peserta\nDidik Baru',
